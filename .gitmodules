@@ -1,3 +1,6 @@
 [submodule "pelican-plugins"]
 	path = pelican-plugins
 	url = git@github.com:getpelican/pelican-plugins.git
+[submodule "pelican-sober"]
+	path = pelican-sober
+	url = git@github.com:mortenvp/pelican-sober
