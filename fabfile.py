@@ -2,6 +2,7 @@ from fabric.api import *
 import fabric.contrib.project as project
 import os
 import sys
+import glob
 import SimpleHTTPServer
 import SocketServer
 
@@ -9,15 +10,13 @@ import SocketServer
 env.deploy_path = 'output'
 DEPLOY_PATH = env.deploy_path
 
-# Remote server configuration
-production = 'root@localhost:22'
-dest_path = '/var/www'
+PUBLISH_DIR = '/home/mvp/dev/mortenvp.github.io'
+PELICAN_DIR = '/home/mvp/dev/mortenvp-pelican'
+OUTPUT_DIR = os.path.join(PELICAN_DIR, 'output')
 
-# Rackspace Cloud Files configuration settings
-env.cloudfiles_username = 'my_rackspace_username'
-env.cloudfiles_api_key = 'my_rackspace_api_key'
-env.cloudfiles_container = 'my_cloudfiles_container'
-
+base_cmd = ('docker run --name pelican '
+            '-v ~/dev/mortenvp-pelican:/pelican '
+            '--rm mortenvp/mortenvp-docker {}')
 
 def clean():
     if os.path.isdir(DEPLOY_PATH):
@@ -25,49 +24,49 @@ def clean():
         local('mkdir {deploy_path}'.format(**env))
 
 def build():
-    local('pelican -s pelicanconf.py')
+    local(base_cmd.format('pelican -s pelicanconf.py'))
+    chown()
+
+def chown():
+
+    l = []
+    for root, dirs, files in os.walk('output'):
+        for d in dirs:
+            l.append(os.path.join(root,d))
+        for f in files:
+            l.append(os.path.join(root,f))
+
+    local('sudo chown -R mvp:mvp {}'.format(' '.join(l)))
 
 def rebuild():
     clean()
     build()
 
-def regenerate():
-    local('pelican -r -s pelicanconf.py')
-
 def serve():
+    rebuild()
+
     os.chdir(env.deploy_path)
 
     PORT = 8000
     class AddressReuseTCPServer(SocketServer.TCPServer):
         allow_reuse_address = True
 
-    server = AddressReuseTCPServer(('', PORT), SimpleHTTPServer.SimpleHTTPRequestHandler)
+    server = AddressReuseTCPServer(
+        ('', PORT), SimpleHTTPServer.SimpleHTTPRequestHandler)
 
     sys.stderr.write('Serving on port {0} ...\n'.format(PORT))
+    local('xdg-open http://localhost:8000')
     server.serve_forever()
 
-def reserve():
-    build()
-    serve()
 
-def preview():
-    local('pelican -s publishconf.py')
-
-def cf_upload():
-    rebuild()
-    local('cd {deploy_path} && '
-          'swift -v -A https://auth.api.rackspacecloud.com/v1.0 '
-          '-U {cloudfiles_username} '
-          '-K {cloudfiles_api_key} '
-          'upload -c {cloudfiles_container} .'.format(**env))
-
-@hosts(production)
 def publish():
-    local('pelican -s publishconf.py')
-    project.rsync_project(
-        remote_dir=dest_path,
-        exclude=".DS_Store",
-        local_dir=DEPLOY_PATH.rstrip('/') + '/',
-        delete=True,
-        extra_opts='-c',
-    )
+
+    local(base_cmd.format('pelican -s publishconf.py'))
+    chown()
+
+    with lcd(PUBLISH_DIR):
+        local('git pull')
+        local('cp -R {}/* .'.format(OUTPUT_DIR))
+        local('git add -A')
+        local('git commit -am "publish"')
+        local('git push')

@@ -34,7 +34,8 @@ DEFAULT_PAGINATION = 10
 # Uncomment following line if you want document-relative URLs when developing
 #RELATIVE_URLS = True
 
-THEME = 'pelican-simplegrey'
+THEME = 'pelican-sober'
+PELICAN_SOBER_STICKY_SIDEBAR = False
 
 PLUGIN_PATHS = ['pelican-plugins']
 
