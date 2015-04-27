@@ -7,7 +7,7 @@ using an iPython notebook.
 
 Turns out this works pretty well, and
 
-# Hosting the slides
+## Hosting the slides
 
 Since the slides are basically a html website with some javascript we can
 easily make the slides available for online viewing.

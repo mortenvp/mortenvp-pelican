@@ -13,30 +13,42 @@ DEPLOY_PATH = env.deploy_path
 PUBLISH_DIR = '/home/mvp/dev/mortenvp.github.io'
 PELICAN_DIR = '/home/mvp/dev/mortenvp-pelican'
 OUTPUT_DIR = os.path.join(PELICAN_DIR, 'output')
+CACHE_DIR = os.path.join(PELICAN_DIR, 'cache')
 
 base_cmd = ('docker run --name pelican '
             '-v ~/dev/mortenvp-pelican:/pelican '
             '--rm mortenvp/mortenvp-docker {}')
 
 def clean():
-    if os.path.isdir(DEPLOY_PATH):
-        local('rm -rf {deploy_path}'.format(**env))
-        local('mkdir {deploy_path}'.format(**env))
+    """
+    """
+    chown()
+    if os.path.isdir(OUTPUT_DIR):
+            local('rm -rf {}'.format(OUTPUT_DIR))
+
+    if os.path.isdir(CACHE_DIR):
+            local('rm -rf {}'.format(CACHE_DIR))
+
 
 def build():
     local(base_cmd.format('pelican -s pelicanconf.py'))
     chown()
 
-def chown():
+def chown_dir(dir):
 
-    l = []
-    for root, dirs, files in os.walk('output'):
+    l = [dir]
+    for root, dirs, files in os.walk(dir):
         for d in dirs:
             l.append(os.path.join(root,d))
         for f in files:
             l.append(os.path.join(root,f))
 
     local('sudo chown -R mvp:mvp {}'.format(' '.join(l)))
+
+
+def chown():
+    chown_dir(OUTPUT_DIR)
+    chown_dir(CACHE_DIR)
 
 def rebuild():
     clean()

@@ -8,3 +8,4 @@ venv/
 v/
 cache/
 _nb_header.html
+.ipynb_checkpoints
