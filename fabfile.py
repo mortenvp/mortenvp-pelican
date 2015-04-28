@@ -36,6 +36,9 @@ def build():
 
 def chown_dir(dir):
 
+    if not os.path.isdir(dir):
+        return
+
     l = [dir]
     for root, dirs, files in os.walk(dir):
         for d in dirs:
@@ -72,6 +75,8 @@ def serve():
 
 
 def publish():
+
+    clean()
 
     local(base_cmd.format('pelican -s publishconf.py'))
     chown()
