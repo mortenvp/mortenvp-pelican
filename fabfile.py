@@ -31,8 +31,10 @@ def clean():
 
 
 def build():
-    local(base_cmd.format('pelican -s pelicanconf.py'))
-    chown()
+    env.shell = "/bin/bash -l -c"
+    local('source activate blog', shell=True, executable='/bin/bash')
+    local('pelican -s pelicanconf.py')
+    local('deactivate')
 
 def chown_dir(dir):
 

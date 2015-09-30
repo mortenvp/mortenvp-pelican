@@ -1,0 +1,6 @@
+name: blog
+channels:
+  - https://conda.binstar.org/andreas-h
+dependencies:
+  - pelican
+  - jupyter
