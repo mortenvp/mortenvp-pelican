@@ -1,6 +1,7 @@
 name: blog
 channels:
-  - https://conda.binstar.org/andreas-h
+  - https://conda.anaconda.org/davethecipo
 dependencies:
   - pelican
   - jupyter
+  - markdown

@@ -57,4 +57,4 @@ if not os.path.exists('_nb_header.html'):
     warnings.warn("_nb_header.html not found.  "
                   "Rerun make html to finalize build.")
 else:
-    EXTRA_HEADER = open('_nb_header.html').read().decode('utf-8')
+    EXTRA_HEADER = open('_nb_header.html').read()
